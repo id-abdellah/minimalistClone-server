@@ -54,3 +54,9 @@ Thumbs.db
 
 # TypeScript cache
 *.tsbuildinfo
+
+#
+uploads/*
+!uploads/default.jpg
+
+# !uploads/default.jpg

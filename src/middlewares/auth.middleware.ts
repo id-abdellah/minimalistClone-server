@@ -9,7 +9,7 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
     const { authorization } = req.headers
 
     if (!authorization) {
-        res.status(400).send(Jsend.error("token not provided"));
+        res.status(401).send(Jsend.error("token not provided"));
         return;
     }
 
@@ -21,7 +21,6 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
         next();
     } catch (error) {
         const err = error as JsonWebTokenError;
-
         res.status(401).send(Jsend.error(`${err.name}: ${err.message}`))
     }
 }

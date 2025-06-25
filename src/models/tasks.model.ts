@@ -1,4 +1,4 @@
-interface TasksModel {
+export interface TasksModel {
     list_id: string
     todo_id: string
     content: string

@@ -5,6 +5,9 @@ import { User, UserLogin } from "../middlewares/user.middlewares";
 import { genID } from "../utils/utils";
 import Jsend from "../utils/jsend";
 import { genJWT } from "../utils/jwt";
+import { ColumnsSchema, filterColumns } from "../utils/dbUtils";
+import { AppError } from "../utils/appError";
+import { UsersModel } from "../models/users.model";
 
 
 export async function registerUser(req: Request<{}, {}, User>, res: Response) {
@@ -41,6 +44,33 @@ export async function login(req: Request<{}, {}, UserLogin>, res: Response) {
 
     const token = genJWT({ email: user.email, user_id: user.user_id });
     res.status(200).send(Jsend.success({ token }));
+}
+
+export async function getUserById(req: Request<{ user_id: string }>, res: Response) {
+    const BASE_URL = process.env.BASE_URL;
+    if (!BASE_URL) throw new AppError("BASE_URL env variable does not provided", 500);
+
+    const user_id = req.params.user_id;
+
+    // filtering cols
+    const [columnsSchema] = await DB.query("SHOW COLUMNS FROM users");
+    const columns = columnsSchema as ColumnsSchema[];
+    const filteredCols = filterColumns(columns, ["password_hash"]);
+
+    const [rows] = await DB.query(`SELECT ${filteredCols} FROM users WHERE users.user_id = ?`, [user_id]);
+    let user = (rows as UsersModel[])[0];
+
+    if (!user) {
+        res.status(404).send(Jsend.fail("user dosn't exist"))
+        return;
+    }
+
+    user.avatar = !user.avatar ? "default.jpg" : user.avatar;
+    const avatarUrl = `${BASE_URL}/api/useravatar/${user.avatar}`;
+
+    const responseData = { ...user, avatarUrl }
+
+    res.status(200).send(Jsend.success(responseData))
 }
 
 export async function setAvatar(req: Request, res: Response) {

@@ -6,6 +6,7 @@ import { usersRouter } from "./routes/users.route";
 import path from "path";
 import cors from "cors"
 import { listsRouter } from "./routes/lists.route";
+import { tasksRouter } from "./routes/tasks.route";
 
 const port = +process.env.PORT!
 const hostname = process.env.HOSTNAME!
@@ -20,6 +21,7 @@ app.use("/api/useravatar", express.static(path.join(__dirname, "../uploads")))
 // routes
 app.use("/api/users", usersRouter)
 app.use("/api/lists", listsRouter)
+app.use("/api/tasks", tasksRouter)
 
 
 // globla errors handlers

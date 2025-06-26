@@ -68,3 +68,22 @@ export async function renameList(req: Request<{ listId: string }, {}, ListNameUp
 
     res.status(201).json(Jsend.success("list name updated!"))
 }
+
+export async function removeList(req: Request<{ listId: string }>, res: Response) {
+    const user_id = req.user?.user_id;
+    const list_id = req.params.listId;
+
+    // check for list existence;
+    const [rows] = await DB.query("SELECT * FROM lists WHERE lists.list_id = ? AND lists.user_id = ?", [list_id, user_id]);
+    if ((rows as any[]).length === 0) {
+        res.status(404).json(Jsend.success("list not found"))
+        return;
+    }
+
+    await DB.query(
+        "DELETE FROM lists WHERE lists.list_id = ? AND lists.user_id = ?",
+        [list_id, user_id]
+    );
+
+    res.status(200).json(Jsend.success("list successfuly deleted"))
+}

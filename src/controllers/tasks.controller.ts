@@ -45,7 +45,7 @@ export async function getAllTasks(req: Request<{ listId: string }>, res: Respons
         [list_id]
     );
 
-    const tasks = tasksRows as TasksModel[];
+    const tasks = (tasksRows as TasksModel[]).sort((a, b) => a.completed - b.completed);
 
     res.status(200).json(Jsend.success({ tasks, list }))
 }

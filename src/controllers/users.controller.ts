@@ -8,6 +8,8 @@ import { genJWT } from "../utils/jwt";
 import { ColumnsSchema, filterColumns } from "../utils/dbUtils";
 import { AppError } from "../utils/appError";
 import { UsersModel } from "../models/users.model";
+import path from "path";
+import { unlink } from "fs/promises";
 
 
 export async function registerUser(req: Request<{}, {}, User>, res: Response) {
@@ -89,4 +91,30 @@ export async function setAvatar(req: Request, res: Response) {
     )
 
     res.status(201).send(Jsend.success({ message: "avatar successfuly updated" }))
+}
+
+export async function deleteUser(req: Request<{ user_id: string }>, res: Response) {
+    const admin = req.body?.admin;
+    const user_id = req.params.user_id;
+    if (!admin || admin !== 2288) {
+        res.status(401).json(Jsend.error("You are not an admin"));
+        return;
+    }
+
+    const [userRow] = await DB.query("SELECT * FROM users WHERE users.user_id = ?", [user_id]);
+    const user = (userRow as UsersModel[])[0];
+
+    if (!user) {
+        res.status(404).json(Jsend.fail("user dosn't exist"))
+        return;
+    }
+
+    if (user.avatar !== null && user.avatar !== "default.jpg") {
+        const uploadsDirPath = path.join(__dirname, "../../uploads");
+        const avatarPath = path.join(uploadsDirPath, `/${user.avatar}`);
+        await unlink(avatarPath);
+    }
+
+    await DB.query("DELETE FROM users WHERE users.user_id = ?", [user_id]);
+    res.json(Jsend.success("deleted successfuly"));
 }

@@ -16,13 +16,17 @@ const app = express();
 app.use(cors({ origin: "http://localhost:5173" }))
 app.use(express.json());
 app.use("/api/useravatar", express.static(path.join(__dirname, "../uploads")))
+app.use(express.static(path.join(__dirname, "../client")))
 
+// api routes
+app.use("/api/users", usersRouter);
+app.use("/api/lists", listsRouter);
+app.use("/api/tasks", tasksRouter);
 
-// routes
-app.use("/api/users", usersRouter)
-app.use("/api/lists", listsRouter)
-app.use("/api/tasks", tasksRouter)
-
+// serving frontend
+app.use((req, res) => {
+    res.sendFile(path.join(__dirname, "../client/index.html"));
+})
 
 // globla errors handlers
 app.use(notFoundHandler);
